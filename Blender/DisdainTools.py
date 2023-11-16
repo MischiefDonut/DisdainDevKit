@@ -121,7 +121,9 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
     def genscripts_zscript_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
         print("generating zscript")
 
-        txt_to_save = ""
+        txt_to_save = "// ZSCRIPT //////////"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "\n"
 
         frames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         total_frames = len(frames)
@@ -162,6 +164,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
             # write state label
             if new_state_label and is_directive == False and is_infinite_tic == False:
+                txt_to_save = txt_to_save + "\t"
                 txt_to_save = txt_to_save + "%s:" % (new_state_label)
                 txt_to_save = txt_to_save + "\n"
                 if f > 1:
@@ -188,7 +191,9 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
             # write state
             state_tics = -1 if is_infinite_tic else 1
-            txt_to_save = txt_to_save + "\t%04d %s %d" % (sprite_frame, state_frame, state_tics)
+            txt_to_save = txt_to_save + "\t"
+            txt_to_save = txt_to_save + "\t"
+            txt_to_save = txt_to_save + "%04d %s %d" % (sprite_frame, state_frame, state_tics)
             if functions:
                 txt_to_save = txt_to_save + " " + functions
             else:
@@ -198,7 +203,9 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
             # parse directive
             if new_state_label and is_directive == True:
                 new_state_label = new_state_label[1:]
-                txt_to_save = txt_to_save + "\t%s;\n" % (new_state_label)
+                txt_to_save = txt_to_save + "\t"
+                txt_to_save = txt_to_save + "\t"
+                txt_to_save = txt_to_save + "%s;\n" % (new_state_label)
 
             current_state += 1
 
@@ -212,6 +219,8 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         print("generating modeldef")
 
         txt_to_save = ""
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "// MODELDEF //////////"
         txt_to_save = txt_to_save + "\n"
 
         frames = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -249,6 +258,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
             if new_state_label:
                 #print("// %s" % (new_state_label))
                 txt_to_save = txt_to_save + "\n"
+                txt_to_save = txt_to_save + "\t"
                 txt_to_save = txt_to_save + "// %s" % (new_state_label)
                 txt_to_save = txt_to_save + "\n"
                 if f > 1:
@@ -263,6 +273,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
             state_frame = frames[(current_state) % total_frames]
 
             #print("FrameIndex %04d %s 0 %d" % (sprite_frame, state_frame, f))
+            txt_to_save = txt_to_save + "\t"
             txt_to_save = txt_to_save + "FrameIndex %04d %s 0 %d" % (sprite_frame, state_frame, f)
             txt_to_save = txt_to_save + "\n"
 
