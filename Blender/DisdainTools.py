@@ -111,6 +111,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
     bl_options = { 'REGISTER' }
 
     def execute(self, context):
+        os.system("cls")
         # erase the file first
         file = open(context.scene.disdaintools.filepath_scripts, 'w').close()
         self.genscripts_zscript_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
@@ -118,7 +119,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         return { 'FINISHED' }
 
     def genscripts_zscript_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
-        os.system("cls")
+        print("generating zscript")
 
         txt_to_save = ""
 
@@ -159,6 +160,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                     is_directive = True
                     is_infinite_tic = True
 
+            # write state label
             if new_state_label and is_directive == False and is_infinite_tic == False:
                 txt_to_save = txt_to_save + "%s:" % (new_state_label)
                 txt_to_save = txt_to_save + "\n"
@@ -172,9 +174,25 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
             sprite_frame = current_sprite
             state_frame = frames[(current_state) % total_frames]
+            
+            # look for functions (only on layer 5)
+            functions = ""
+            for current_object in scene.objects:
+                if current_object.type != 'EMPTY':
+                    continue
+                if not current_object.layers[5]:
+                    continue
+                if current_object.hide:
+                    continue
+                functions = bpy.data.objects[current_object.name]['DisdainFunctions']
 
+            # write state
             state_tics = -1 if is_infinite_tic else 1
-            txt_to_save = txt_to_save + "\t%04d %s %d;" % (sprite_frame, state_frame, state_tics)
+            txt_to_save = txt_to_save + "\t%04d %s %d" % (sprite_frame, state_frame, state_tics)
+            if functions:
+                txt_to_save = txt_to_save + " " + functions
+            else:
+                txt_to_save = txt_to_save + ";"
             txt_to_save = txt_to_save + "\n"
 
             # parse directive
@@ -191,7 +209,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         scene.frame_set(old_frame)
 
     def genscripts_modeldef_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
-        os.system("cls")
+        print("generating modeldef")
 
         txt_to_save = ""
         txt_to_save = txt_to_save + "\n"
