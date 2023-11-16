@@ -87,6 +87,13 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
             targ_cur_y = targ_obj.location.y
             calc_y = targ_cur_y - targ_prev_y
 
+            # fix sign
+            calc_y = abs(calc_y)
+
+            # round down
+            d = 4
+            calc_y = round(calc_y, d)
+
             scene.update()
             bpy.ops.wm.redraw_timer(type = 'DRAW_WIN_SWAP', iterations = 1)
 
@@ -177,7 +184,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
             sprite_frame = current_sprite
             state_frame = frames[(current_state) % total_frames]
-            
+
             # look for functions (only on layer 5)
             functions = ""
             for current_object in scene.objects:
