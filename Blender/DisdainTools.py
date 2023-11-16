@@ -149,8 +149,17 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                     if old_state_label != new_state_label:
                         old_state_label = new_state_label
 
+            # special parsing
+            is_directive = False
+            is_infinite_tic = False
             if new_state_label:
-                #print("%s:" % (new_state_label))
+                if new_state_label[0] == ':':
+                    is_directive = True
+                elif new_state_label[0] == '-':
+                    is_directive = True
+                    is_infinite_tic = True
+
+            if new_state_label and is_directive == False and is_infinite_tic == False:
                 txt_to_save = txt_to_save + "%s:" % (new_state_label)
                 txt_to_save = txt_to_save + "\n"
                 if f > 1:
@@ -164,9 +173,14 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
             sprite_frame = current_sprite
             state_frame = frames[(current_state) % total_frames]
 
-            #print("\t%04d %s 1;" % (sprite_frame, state_frame))
-            txt_to_save = txt_to_save + "\t%04d %s 1;" % (sprite_frame, state_frame)
+            state_tics = -1 if is_infinite_tic else 1
+            txt_to_save = txt_to_save + "\t%04d %s %d;" % (sprite_frame, state_frame, state_tics)
             txt_to_save = txt_to_save + "\n"
+
+            # parse directive
+            if new_state_label and is_directive == True:
+                new_state_label = new_state_label[1:]
+                txt_to_save = txt_to_save + "\t%s;\n" % (new_state_label)
 
             current_state += 1
 
@@ -178,7 +192,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
     def genscripts_modeldef_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
         os.system("cls")
-        
+
         txt_to_save = ""
         txt_to_save = txt_to_save + "\n"
 
@@ -209,8 +223,14 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                     if old_state_label != new_state_label:
                         old_state_label = new_state_label
 
+            # skip directives
+            if new_state_label:
+                if new_state_label[0] == ':' or new_state_label[0] == '-':
+                    new_state_label = ""
+
             if new_state_label:
                 #print("// %s" % (new_state_label))
+                txt_to_save = txt_to_save + "\n"
                 txt_to_save = txt_to_save + "// %s" % (new_state_label)
                 txt_to_save = txt_to_save + "\n"
                 if f > 1:
