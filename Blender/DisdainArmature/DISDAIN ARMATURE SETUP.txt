@@ -1,0 +1,18 @@
+Export process:
+
+- Go into object mode
+- Select the armature
+- Be sure the current frame is at 1 (where the feet IK is correct and the feet are planted on to the floor)
+- Add a new NLA track, name it to Action
+- NLA - Bake action: all frames (0 to whatever the last frame is, frame step = 1) - untick all boxes EXCEPT Visual Keying. Bake Data set to Pose.
+- Mute the other NLA tracks, leaving Action the only active one
+- Push the newly created Action down
+- On the Controller armature, set it to Pose Mode, then set the "Disable all constraints" bone's X to 1
+- Select the armature, then the meshes, then export to IQM
+- IQM export dialog: Animations: "Action", tick Meshes, Skeleton, Bounding Boxes. Materials set to "material"
+
+Recommended not to save the Blender file beyond this point. But to undo everything and put the armature back in an editable state:
+
+- Delete the Action strip and the Action track
+- Unmute the original NLA track (the one with the original action clips intact)
+- On the Controller armature, set it to Pose Mode, then select the "Disable all constraints" and reset its location (Alt G)
