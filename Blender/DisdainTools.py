@@ -162,6 +162,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
             # special parsing
             is_directive = False
             is_infinite_tic = False
+            tic_duration = 1
             if new_state_label:
                 if new_state_label[0] == ':':
                     is_directive = True
@@ -185,19 +186,22 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
             sprite_frame = current_sprite
             state_frame = frames[(current_state) % total_frames]
 
-            # look for functions (only on layer 5)
+            # look for special stuff (functions, tic duration, etc (only on layer 5))
             functions = ""
             for current_object in scene.objects:
                 if current_object.type != 'EMPTY':
                     continue
                 if not current_object.layers[5]:
                     continue
+                # set tic duration
+                if bpy.data.objects[current_object.name].get('TicDuration') is not None:
+                    tic_duration = bpy.data.objects[current_object.name]['TicDuration']
                 if current_object.hide:
                     continue
                 functions = bpy.data.objects[current_object.name]['DisdainFunctions']
 
             # write state
-            state_tics = -1 if is_infinite_tic else 1
+            state_tics = -1 if is_infinite_tic else tic_duration
             txt_to_save = txt_to_save + "\t"
             txt_to_save = txt_to_save + "\t"
             txt_to_save = txt_to_save + "%04d %s %d" % (sprite_frame, state_frame, state_tics)
