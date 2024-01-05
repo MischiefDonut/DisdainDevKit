@@ -170,22 +170,6 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                     is_directive = True
                     is_infinite_tic = True
 
-            # write state label
-            if new_state_label and is_directive == False and is_infinite_tic == False:
-                txt_to_save = txt_to_save + "\t"
-                txt_to_save = txt_to_save + "%s:" % (new_state_label)
-                txt_to_save = txt_to_save + "\n"
-                if f > 1:
-                    current_sprite += 1
-                current_state = 0
-
-            if current_state >= total_frames:
-                current_sprite += 1
-                current_state = 0
-
-            sprite_frame = current_sprite
-            state_frame = frames[(current_state) % total_frames]
-
             # look for special stuff (functions, tic duration, etc (only on layer 5))
             functions = ""
             for current_object in scene.objects:
@@ -200,6 +184,30 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                     continue
                 if bpy.data.objects[current_object.name].get('DisdainFunctions') is not None:
                     functions = bpy.data.objects[current_object.name]['DisdainFunctions']
+
+            # write state label
+            if new_state_label and is_directive == False and is_infinite_tic == False:
+                txt_to_save = txt_to_save + "\t"
+                txt_to_save = txt_to_save + "%s:" % (new_state_label)
+                txt_to_save = txt_to_save + "\n"
+                """
+                # write SetAnimation call and also the framerate
+                txt_to_save = txt_to_save + "\t"
+                txt_to_save = txt_to_save + "\t"
+                txt_to_save = txt_to_save + "TNT1 A 0 "
+                txt_to_save = txt_to_save + "SetAnimation(\"%s\", %f);" % (new_state_label, 35 / tic_duration)
+                txt_to_save = txt_to_save + "\n"
+                """
+                if f > 1:
+                    current_sprite += 1
+                current_state = 0
+
+            if current_state >= total_frames:
+                current_sprite += 1
+                current_state = 0
+
+            sprite_frame = current_sprite
+            state_frame = frames[(current_state) % total_frames]
 
             # write state
             state_tics = -1 if is_infinite_tic else tic_duration
