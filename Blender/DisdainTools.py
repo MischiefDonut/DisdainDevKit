@@ -198,7 +198,8 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                     tic_duration = bpy.data.objects[current_object.name]['TicDuration']
                 if current_object.hide:
                     continue
-                functions = bpy.data.objects[current_object.name]['DisdainFunctions']
+                if bpy.data.objects[current_object.name].get('DisdainFunctions') is not None:
+                    functions = bpy.data.objects[current_object.name]['DisdainFunctions']
 
             # write state
             state_tics = -1 if is_infinite_tic else tic_duration
