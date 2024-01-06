@@ -254,9 +254,9 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         current_sprite = 0
         current_state = 0
 
-        # set use_anim_clips to TRUE to use per-animation-clip workflow
-        # FALSE if using old-style workflow where all of the animations is a single giant and long timeline
-        use_anim_clips = TRUE
+        # set use_anim_clips to True to use per-animation-clip workflow
+        # False if using old-style workflow where all of the animations is a single giant and long timeline
+        use_anim_clips = True
         iqm_anim_name = ""
         frame_to_write = 0
 
@@ -276,7 +276,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                     if old_state_label != new_state_label:
                         old_state_label = new_state_label
 
-                    if use_anim_clips == TRUE:
+                    if use_anim_clips == True:
                         # write iqm frame name for the MODELDEF
                         if new_state_label[0] != ':' and new_state_label[0] != '-':
                             iqm_anim_name = m.name
@@ -303,7 +303,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
             sprite_frame = current_sprite
             state_frame = frames[(current_state) % total_frames]
 
-            if use_anim_clips == TRUE:
+            if use_anim_clips == True:
                 if new_state_label:
                     frame_to_write = 1
                 else:
@@ -311,7 +311,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
             #print("FrameIndex %04d %s 0 %d" % (sprite_frame, state_frame, f))
             txt_to_save = txt_to_save + "\t"
-            if use_anim_clips == FALSE:
+            if use_anim_clips == False:
                 txt_to_save = txt_to_save + "FrameIndex %04d %s 0 %d" % (sprite_frame, state_frame, f)
             else:
                 txt_to_save = txt_to_save + "Frame %04d %s 0 \"%s:%d\"" % (sprite_frame, state_frame, iqm_anim_name, frame_to_write)
