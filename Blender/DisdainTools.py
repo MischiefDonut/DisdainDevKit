@@ -123,6 +123,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         file = open(context.scene.disdaintools.filepath_scripts, 'w').close()
         self.genscripts_zscript_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
         self.genscripts_modeldef_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
+        self.genscripts_animspec_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
         return { 'FINISHED' }
 
     def genscripts_zscript_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
@@ -325,6 +326,49 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
         scene.frame_set(old_frame)
 
+    def genscripts_animspec_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
+        print("generating animspec")
+
+        txt_to_save = ""
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "// ACTIONS //////////"
+        txt_to_save = txt_to_save + "\n"
+
+        old_frame = scene.frame_current
+        frame = start_frame
+
+        old_state_label = ""
+
+        for f in range(start_frame, end_frame + 1):
+            scene.frame_set(f)
+
+            if f == 0:
+                continue
+
+            new_state_label = ""
+
+            for k, m in scene.timeline_markers.items():
+                if (m.frame == f):
+                    if old_state_label != m.name:
+                        new_state_label = m.name
+                    if old_state_label != new_state_label:
+                        old_state_label = new_state_label
+
+            if new_state_label:
+                if new_state_label[0] == ':' or new_state_label[0] == '-':
+                    new_state_label = ""
+
+            if new_state_label:
+                txt_to_save = txt_to_save + "%s," % (new_state_label)
+                
+        # remove last comma
+        txt_to_save = txt_to_save[:-1]
+
+        file = open(filepath, 'a')
+        file.write(txt_to_save)
+        file.close()
+
+        scene.frame_set(old_frame)
 
 class DisdainToolsPanel(bpy.types.Panel):
     bl_idname = 'disdaintools_panel'
