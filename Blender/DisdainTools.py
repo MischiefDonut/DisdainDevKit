@@ -305,7 +305,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
             if use_anim_clips == True:
                 if new_state_label:
-                    frame_to_write = 1
+                    frame_to_write = 0
                 else:
                     frame_to_write += 1
 
