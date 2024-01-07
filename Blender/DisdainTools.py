@@ -360,7 +360,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
             if new_state_label:
                 txt_to_save = txt_to_save + "%s," % (new_state_label)
-                
+
         # remove last comma
         txt_to_save = txt_to_save[:-1]
 
