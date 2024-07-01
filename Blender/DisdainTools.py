@@ -27,6 +27,19 @@ bl_info = \
     "category" : "Render",
 }
 
+# SCRIPT CONFIGURATION (TODO: expose these as checkboxes on the UI
+
+# Set use_anim_clips to True to use per-animation-clip workflow
+# False if using old-style workflow where all of the animations is a single giant and long timeline
+use_anim_clips = True
+
+# Set use_decoupled_anim to True to generate decoupled-animation-style scripts
+# (MODELEF will NOT be generated if True)
+# Setting this to True will also force every State in ZScript to be '0000 A'.
+use_decoupled_anim = True
+
+# END SCRIPT CONFIGURATION
+
 class DisdainToolsSettings(bpy.types.PropertyGroup):
     targ = StringProperty\
     (
@@ -37,16 +50,16 @@ class DisdainToolsSettings(bpy.types.PropertyGroup):
 
     filepath_arunspeeds = StringProperty\
     (
-        name = "ZScript output path",
-        description = """Where to save the ZScript""",
+        name = "A_Run speeds output path",
+        description = """Where to save the generated script""",
         default = "",
         subtype = 'FILE_PATH'
     )
 
     filepath_scripts = StringProperty\
     (
-        name = "ZScript and MODELDEF output path",
-        description = """Where to save the ZScript and MODELDEF""",
+        name = "Animation script output path",
+        description = """Where to save the generated script""",
         default = "",
         subtype = 'FILE_PATH'
     )
@@ -127,7 +140,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         return { 'FINISHED' }
 
     def genscripts_zscript_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
-        print("generating zscript")
+        print("Generating ZScript...")
 
         txt_to_save = "// ZSCRIPT //////////"
         txt_to_save = txt_to_save + "\n"
@@ -210,6 +223,11 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
             sprite_frame = current_sprite
             state_frame = frames[(current_state) % total_frames]
 
+            # force all States to be 0000 A if using decoupled animation
+            if use_decoupled_anim == True:
+                sprite_frame = 0
+                state_frame = frames[0]
+
             # write state
             state_tics = -1 if is_infinite_tic else tic_duration
             txt_to_save = txt_to_save + "\t"
@@ -237,7 +255,10 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         scene.frame_set(old_frame)
 
     def genscripts_modeldef_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
-        print("generating modeldef")
+        if use_decoupled_anim == True:
+            return
+
+        print("Generating MODELDEF...")
 
         txt_to_save = ""
         txt_to_save = txt_to_save + "\n"
@@ -255,9 +276,6 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         current_sprite = 0
         current_state = 0
 
-        # set use_anim_clips to True to use per-animation-clip workflow
-        # False if using old-style workflow where all of the animations is a single giant and long timeline
-        use_anim_clips = True
         modeldef_anim_name = ""
         frame_to_write = 0
 
@@ -327,7 +345,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         scene.frame_set(old_frame)
 
     def genscripts_animspec_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
-        print("generating animspec")
+        print("Generating animspec...")
 
         txt_to_save = ""
         txt_to_save = txt_to_save + "\n"
@@ -394,7 +412,7 @@ class DisdainToolsPanel(bpy.types.Panel):
         # OUTPUT SCRIPTS
         l.row().prop(props, "filepath_scripts", text = "Output path")
         row = l.row()
-        row.operator("render.disdaintools_genscripts_operator", text = "Generate Scripts", icon = 'TEXT')
+        row.operator("render.disdaintools_genscripts_operator", text = "Generate Animation Scripts", icon = 'TEXT')
 
 
 def register():
