@@ -38,6 +38,9 @@ use_anim_clips = True
 # Setting this to True will also force every State in ZScript to be '0000 A'.
 use_decoupled_anim = True
 
+# Set collapse_similar_states to merge similar states into a single line
+collapse_similar_states = True
+
 # END SCRIPT CONFIGURATION
 
 class DisdainToolsSettings(bpy.types.PropertyGroup):
