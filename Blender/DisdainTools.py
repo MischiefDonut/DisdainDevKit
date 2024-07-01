@@ -472,7 +472,6 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         txt_to_save = txt_to_save + "\n"
         txt_to_save = txt_to_save + "{"
         txt_to_save = txt_to_save + "\n"
-        txt_to_save = txt_to_save + "\n"
         txt_to_save = txt_to_save + animspec_comment
         txt_to_save = txt_to_save + "\n"
 
