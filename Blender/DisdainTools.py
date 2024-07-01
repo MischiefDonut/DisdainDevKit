@@ -137,6 +137,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         self.genscripts_zscript_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
         self.genscripts_modeldef_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
         self.genscripts_animspec_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
+        self.genscripts_initanimdata_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
         return { 'FINISHED' }
 
     def genscripts_zscript_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
@@ -160,7 +161,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         for f in range(start_frame, end_frame + 1):
             scene.frame_set(f)
 
-            # skip Ref
+            # skip the default frame
             if f == 0:
                 continue
 
@@ -204,14 +205,16 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                 txt_to_save = txt_to_save + "\t"
                 txt_to_save = txt_to_save + "%s:" % (new_state_label)
                 txt_to_save = txt_to_save + "\n"
-                """
-                # write SetAnimation call and also the framerate
-                txt_to_save = txt_to_save + "\t"
-                txt_to_save = txt_to_save + "\t"
-                txt_to_save = txt_to_save + "TNT1 A 0 "
-                txt_to_save = txt_to_save + "SetAnimation(\"%s\", %f);" % (new_state_label, 35 / tic_duration)
-                txt_to_save = txt_to_save + "\n"
-                """
+
+                # write A_SetAnim call
+                if use_decoupled_anim == True:
+                    txt_to_save = txt_to_save + "\t"
+                    txt_to_save = txt_to_save + "\t"
+                    txt_to_save = txt_to_save + "%04d %s %d " % (0, frames[0], 0)
+                    #txt_to_save = txt_to_save + "SetAnimation('%s', %f);" % (new_state_label, 35 / tic_duration)
+                    txt_to_save = txt_to_save + "A_SetAnim('%s');" % (new_state_label)
+                    txt_to_save = txt_to_save + "\n"
+
                 if f > 1:
                     current_sprite += 1
                 current_state = 0
@@ -382,11 +385,112 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         # remove last comma
         txt_to_save = txt_to_save[:-1]
 
+        txt_to_save = txt_to_save + "\n"
+
         file = open(filepath, 'a')
         file.write(txt_to_save)
         file.close()
 
         scene.frame_set(old_frame)
+
+    def genscripts_initanimdata_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
+        if use_decoupled_anim == False:
+            return
+
+        print("Generating InitAnimData...")
+
+        txt_to_save = "\t// "
+
+        tic_duration = 0
+        anim_state_name = ""
+        anim_state_names = []
+        anim_state_durations = []
+
+        old_frame = scene.frame_current
+        frame = start_frame
+
+        old_state_label = ""
+
+        for f in range(start_frame, end_frame + 1):
+            scene.frame_set(f)
+
+            if f == 0:
+                continue
+
+            new_state_label = ""
+
+            for k, m in scene.timeline_markers.items():
+                if (m.frame == f):
+                    if old_state_label != m.name:
+                        new_state_label = m.name
+                    if old_state_label != new_state_label:
+                        old_state_label = new_state_label
+
+            if new_state_label:
+                if new_state_label[0] == ':' or new_state_label[0] == '-':
+                    new_state_label = ""
+
+            if new_state_label:
+                txt_to_save = txt_to_save + "%s," % (new_state_label)
+                anim_state_names.append(new_state_label)
+
+                tic_duration_to_add = 0
+                for current_object in scene.objects:
+                    if current_object.type != 'EMPTY':
+                        continue
+                    if not current_object.layers[5]:
+                        continue
+                    if bpy.data.objects[current_object.name].get('TicDuration') is not None:
+                        tic_duration_to_add = bpy.data.objects[current_object.name]['TicDuration']
+                        break
+                anim_state_durations.append(tic_duration_to_add)
+
+        # remove last comma
+        txt_to_save = txt_to_save[:-1]
+
+        # save the text as a comment to be used later
+        animspec_comment = txt_to_save
+        txt_to_save = ""
+
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "//==========================================================================="
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "//"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "// ANIMATION DATA (Generated from DisdainTools, do not edit by hand)"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "//"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "//==========================================================================="
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "override void InitAnimData(void)"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "{"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + animspec_comment
+        txt_to_save = txt_to_save + "\n"
+
+        cnt = 0
+        for x in anim_state_names:
+            anim_state_name = x
+            tic_duration = anim_state_durations[cnt]
+            txt_to_save = txt_to_save + "\t" + "SetAnimData('" + anim_state_name + "', " + "%d" % (tic_duration) + ");"
+            txt_to_save = txt_to_save + "\n"
+            cnt += 1
+
+        txt_to_save = txt_to_save + "}"
+        txt_to_save = txt_to_save + "\n"
+        txt_to_save = txt_to_save + "\n"
+
+        file = open(filepath, 'a')
+        file.write(txt_to_save)
+        file.close()
+
+        scene.frame_set(old_frame)
+
 
 class DisdainToolsPanel(bpy.types.Panel):
     bl_idname = 'disdaintools_panel'
