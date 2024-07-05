@@ -135,12 +135,15 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
     def execute(self, context):
         os.system("cls")
+
         # erase the file first
         file = open(context.scene.disdaintools.filepath_scripts, 'w').close()
+
         self.genscripts_zscript_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
         self.genscripts_modeldef_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
         self.genscripts_animspec_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
         self.genscripts_initanimdata_operator(context.scene, context.scene.disdaintools.filepath_scripts, context.scene.frame_start, context.scene.frame_end)
+
         return { 'FINISHED' }
 
     def genscripts_zscript_operator(self, scene, filepath, start_frame = 0, end_frame = 0):
@@ -188,20 +191,22 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                     is_directive = True
                     is_infinite_tic = True
 
-            # look for special stuff (functions, tic duration, etc (only on layer 5))
+            # look for special meshes (only on layer 5)
             functions = ""
             for current_object in scene.objects:
-                if current_object.type != 'EMPTY':
+                if current_object.type != 'MESH':
                     continue
                 if not current_object.layers[5]:
                     continue
-                # set tic duration
-                if bpy.data.objects[current_object.name].get('TicDuration') is not None:
-                    tic_duration = bpy.data.objects[current_object.name]['TicDuration']
-                if current_object.hide:
-                    continue
-                if bpy.data.objects[current_object.name].get('DisdainFunctions') is not None:
-                    functions = bpy.data.objects[current_object.name]['DisdainFunctions']
+                # TicDuration mesh
+                if current_object.name == "TicDuration":
+                    tic_duration = bpy.data.materials[current_object.name].specular_hardness
+                # Function mesh
+                elif current_object.name == "ScriptFunctions":
+                    for current_material in current_object.data.materials:
+                        if current_material.specular_intensity > 0:
+                            functions = current_material.name
+                            break
 
             # write state label
             if new_state_label and is_directive == False and is_infinite_tic == False:
@@ -439,12 +444,12 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
 
                 tic_duration_to_add = 0
                 for current_object in scene.objects:
-                    if current_object.type != 'EMPTY':
+                    if current_object.type != 'MESH':
                         continue
                     if not current_object.layers[5]:
                         continue
-                    if bpy.data.objects[current_object.name].get('TicDuration') is not None:
-                        tic_duration_to_add = bpy.data.objects[current_object.name]['TicDuration']
+                    if current_object.name == "TicDuration":
+                        tic_duration_to_add = bpy.data.materials[current_object.name].specular_hardness
                         break
                 anim_state_durations.append(tic_duration_to_add)
 
