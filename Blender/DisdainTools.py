@@ -41,6 +41,9 @@ use_decoupled_anim = True
 # Set collapse_similar_states to merge similar states into a single line
 collapse_similar_states = True
 
+# Set animspec_comment_embed_fps to True, to embed the FPS values in the generated animspec_comment
+animspec_comment_embed_fps = True
+
 # END SCRIPT CONFIGURATION
 
 class DisdainToolsSettings(bpy.types.PropertyGroup):
@@ -439,7 +442,22 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
                     new_state_label = ""
 
             if new_state_label:
-                txt_to_save = txt_to_save + "%s," % (new_state_label)
+                txt_to_save = txt_to_save + "%s" % (new_state_label)
+
+                if animspec_comment_embed_fps:
+                    tic_duration_to_add = 0
+                    for current_object in scene.objects:
+                        if current_object.type != 'MESH':
+                            continue
+                        if not current_object.layers[5]:
+                            continue
+                        if current_object.name == "TicDuration":
+                            tic_duration_to_add = bpy.data.materials[current_object.name].specular_hardness
+                            break
+                    current_action_fps = round((35.0 / tic_duration_to_add), 4)
+                    txt_to_save = txt_to_save + ":::%.4f" % (current_action_fps)
+
+                txt_to_save = txt_to_save + ","
                 anim_state_names.append(new_state_label)
 
                 tic_duration_to_add = 0
@@ -456,7 +474,7 @@ class DisdainToolsGenScriptsOperator(bpy.types.Operator):
         # remove last comma
         txt_to_save = txt_to_save[:-1]
 
-        # save the text as a comment to be used later
+        # save the text as a comment to be pasted later in the IQM export dialog
         animspec_comment = txt_to_save
         txt_to_save = ""
 
