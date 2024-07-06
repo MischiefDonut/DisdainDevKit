@@ -78,6 +78,7 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
 
     def execute(self, context):
         self.generate_a_run_speeds(context.scene, context.scene.disdaintools.targ, context.scene.disdaintools.filepath_arunspeeds, context.scene.frame_preview_start, context.scene.frame_preview_end)
+        self.generate_a_move_speeds(context.scene, context.scene.disdaintools.targ, context.scene.disdaintools.filepath_arunspeeds, context.scene.frame_start, context.scene.frame_end)
         return { 'FINISHED' }
 
     def generate_a_run_speeds(self, scene, targ, filepath, start_frame = 0, end_frame = 0):
@@ -120,6 +121,74 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
 
             txt_to_save = ""
             txt_to_save = "A_Run(" + str(calc_y) + ");"
+            txt_to_save = txt_to_save + "\n"
+
+            # write to file
+            file = open(filepath, 'a')
+            file.write(txt_to_save)
+            file.close()
+
+        scene.frame_set(old_frame)
+
+    def generate_a_move_speeds(self, scene, targ, filepath, start_frame = 0, end_frame = 0):
+        os.system("cls")
+
+        targ_obj = scene.objects[targ]
+
+        if targ_obj.type != 'EMPTY':
+            self.report({'ERROR_INVALID_INPUT'}, "Target must be an Empty object!")
+            return
+
+        old_frame = scene.frame_current
+
+        frame = start_frame
+
+        # erase the file first
+        file = open(filepath, 'w').close()
+
+        txt_to_save = ""
+
+        targ_prev_y = 0.0
+        targ_prev_x = 0.0
+        targ_prev_z = 0.0
+
+        for f in range(start_frame, end_frame + 1):
+            scene.frame_set(f)
+
+            targ_cur_y = targ_obj.location.y
+            calc_y = targ_cur_y - targ_prev_y
+            targ_cur_x = targ_obj.location.x
+            calc_x = targ_cur_x - targ_prev_x
+            targ_cur_z = targ_obj.location.z
+            calc_z = targ_cur_z - targ_prev_z
+
+            # fix sign
+            calc_y *= -1
+            #calc_x *= -1
+            #calc_z *= -1
+
+            if math.isclose(calc_y, 0):
+                calc_y = abs(calc_y)
+            if math.isclose(calc_x, 0):
+                calc_x = abs(calc_x)
+            if math.isclose(calc_z, 0):
+                calc_z = abs(calc_z)
+
+            # round down
+            d = 4
+            calc_y = round(calc_y, d)
+            calc_x = round(calc_x, d)
+            calc_z = round(calc_z, d)
+
+            scene.update()
+            bpy.ops.wm.redraw_timer(type = 'DRAW_WIN_SWAP', iterations = 1)
+
+            targ_prev_y = targ_cur_y
+            targ_prev_x = targ_cur_x
+            targ_prev_z = targ_cur_z
+
+            txt_to_save = ""
+            txt_to_save = txt_to_save + "A_Move(" + str(calc_y) + ", " +str(calc_x) + ", " + str(calc_z) + ");"
             txt_to_save = txt_to_save + "\n"
 
             # write to file
