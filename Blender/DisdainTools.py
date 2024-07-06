@@ -107,7 +107,7 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
             calc_y = targ_cur_y - targ_prev_y
 
             # fix sign
-            calc_y = abs(calc_y)
+            calc_y *= -1
 
             # round down
             d = 4
@@ -124,7 +124,6 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
 
             # write to file
             file = open(filepath, 'a')
-            #txt_to_save = txt_to_save + "\n"
             file.write(txt_to_save)
             file.close()
 
