@@ -44,6 +44,9 @@ collapse_similar_states = True
 # Set animspec_comment_embed_fps to True, to embed the FPS values in the generated animspec_comment
 animspec_comment_embed_fps = True
 
+# Set generate_a_move to True to generate movement in XYZ
+generate_a_move = False
+
 # END SCRIPT CONFIGURATION
 
 class DisdainToolsSettings(bpy.types.PropertyGroup):
@@ -110,6 +113,23 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
             # fix sign
             calc_y *= -1
 
+            if math.isclose(calc_y, 0):
+                calc_y = abs(calc_y)
+
+            # need to divide the distance by tic duration
+            tic_duration = 0
+            for current_object in scene.objects:
+                if current_object.type != 'MESH':
+                    continue
+                if not current_object.layers[5]:
+                    continue
+                if current_object.name == "TicDuration":
+                    tic_duration = bpy.data.materials[current_object.name].specular_hardness
+                    break
+            if tic_duration == 0:
+                self.report({'ERROR_INVALID_INPUT'}, "No TicDuration found!")
+            calc_y /= tic_duration
+
             # round down
             d = 4
             calc_y = round(calc_y, d)
@@ -131,6 +151,9 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
         scene.frame_set(old_frame)
 
     def generate_a_move_speeds(self, scene, targ, filepath, start_frame = 0, end_frame = 0):
+        if generate_a_move == False:
+            return
+
         os.system("cls")
 
         targ_obj = scene.objects[targ]
@@ -144,7 +167,10 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
         frame = start_frame
 
         # erase the file first
-        file = open(filepath, 'w').close()
+        #file = open(filepath, 'w').close()
+        file = open(filepath, 'a')
+        file.write("\n")
+        file.close()
 
         txt_to_save = ""
 
@@ -173,6 +199,22 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
                 calc_x = abs(calc_x)
             if math.isclose(calc_z, 0):
                 calc_z = abs(calc_z)
+
+            # need to divide the distance by tic duration
+            tic_duration = 0
+            for current_object in scene.objects:
+                if current_object.type != 'MESH':
+                    continue
+                if not current_object.layers[5]:
+                    continue
+                if current_object.name == "TicDuration":
+                    tic_duration = bpy.data.materials[current_object.name].specular_hardness
+                    break
+            if tic_duration == 0:
+                self.report({'ERROR_INVALID_INPUT'}, "No TicDuration found!")
+            calc_y /= tic_duration
+            calc_x /= tic_duration
+            calc_z /= tic_duration
 
             # round down
             d = 4
