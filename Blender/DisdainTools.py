@@ -77,7 +77,7 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
     bl_options = { 'REGISTER' }
 
     def execute(self, context):
-        self.generate_a_run_speeds(context.scene, context.scene.disdaintools.targ, context.scene.disdaintools.filepath_arunspeeds, context.scene.frame_preview_start, context.scene.frame_preview_end)
+        self.generate_a_run_speeds(context.scene, context.scene.disdaintools.targ, context.scene.disdaintools.filepath_arunspeeds, context.scene.frame_start, context.scene.frame_end)
         self.generate_a_move_speeds(context.scene, context.scene.disdaintools.targ, context.scene.disdaintools.filepath_arunspeeds, context.scene.frame_start, context.scene.frame_end)
         return { 'FINISHED' }
 
