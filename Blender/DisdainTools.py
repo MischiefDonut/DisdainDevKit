@@ -44,8 +44,8 @@ collapse_similar_states = True
 # Set animspec_comment_embed_fps to True, to embed the FPS values in the generated animspec_comment
 animspec_comment_embed_fps = True
 
-# Set generate_a_move to True to generate movement in XYZ
-generate_a_move = False
+# Set generate_a_movepos to True to generate movement in XYZ
+generate_a_movepos = True
 
 # END SCRIPT CONFIGURATION
 
@@ -81,7 +81,7 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
 
     def execute(self, context):
         self.generate_a_run_speeds(context.scene, context.scene.disdaintools.targ, context.scene.disdaintools.filepath_arunspeeds, context.scene.frame_start, context.scene.frame_end)
-        self.generate_a_move_speeds(context.scene, context.scene.disdaintools.targ, context.scene.disdaintools.filepath_arunspeeds, context.scene.frame_start, context.scene.frame_end)
+        self.generate_a_movepos_speeds(context.scene, context.scene.disdaintools.targ, context.scene.disdaintools.filepath_arunspeeds, context.scene.frame_start, context.scene.frame_end)
         return { 'FINISHED' }
 
     def generate_a_run_speeds(self, scene, targ, filepath, start_frame = 0, end_frame = 0):
@@ -150,8 +150,8 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
 
         scene.frame_set(old_frame)
 
-    def generate_a_move_speeds(self, scene, targ, filepath, start_frame = 0, end_frame = 0):
-        if generate_a_move == False:
+    def generate_a_movepos_speeds(self, scene, targ, filepath, start_frame = 0, end_frame = 0):
+        if generate_a_movepos == False:
             return
 
         os.system("cls")
@@ -230,7 +230,7 @@ class DisdainToolsGenARunSpeedsOperator(bpy.types.Operator):
             targ_prev_z = targ_cur_z
 
             txt_to_save = ""
-            txt_to_save = txt_to_save + "A_Move(" + str(calc_y) + ", " +str(calc_x) + ", " + str(calc_z) + ");"
+            txt_to_save = txt_to_save + "A_MovePos(" + str(calc_y) + ", " +str(calc_x) + ", " + str(calc_z) + ");"
             txt_to_save = txt_to_save + "\n"
 
             # write to file
